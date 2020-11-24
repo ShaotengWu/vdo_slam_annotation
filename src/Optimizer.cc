@@ -2329,7 +2329,7 @@ int Optimizer::PoseOptimizationNew(Frame *pCurFrame, Frame *pLastFrame, vector<i
 
     return nInitialCorrespondences-nBad;
 }
-
+// * @param TemperalMatch 是通过P3P或者匀速运动模型算出来的光流匹配的点中的inliners
 int Optimizer::PoseOptimizationFlow2Cam(Frame *pCurFrame, Frame *pLastFrame, vector<int> &TemperalMatch)
 {
     float rp_thres = 0.04; // 0.01
@@ -2353,7 +2353,9 @@ int Optimizer::PoseOptimizationFlow2Cam(Frame *pCurFrame, Frame *pLastFrame, vec
     const int N = TemperalMatch.size();
 
     // Set Frame vertex
+    // 相机位姿节点只有一个
     g2o::VertexSE3Expmap * vSE3 = new g2o::VertexSE3Expmap();
+    // P3P或者匀速运动模型
     cv::Mat Init = pCurFrame->mTcw; // initial with camera pose
     vSE3->setEstimate(Converter::toSE3Quat(Init));
     // vSE3->setEstimate(Converter::toSE3Quat(cv::Mat::eye(4,4,CV_32F)));
@@ -2368,6 +2370,7 @@ int Optimizer::PoseOptimizationFlow2Cam(Frame *pCurFrame, Frame *pLastFrame, vec
     vnIndexEdgeMono.reserve(N);
 
     // parameter for robust function
+    // sqrt(0.04)
     const float deltaMono = sqrt(rp_thres);  // 5.991
 
     bool mono = 1; // monocular
@@ -2384,6 +2387,7 @@ int Optimizer::PoseOptimizationFlow2Cam(Frame *pCurFrame, Frame *pLastFrame, vec
 
             // Set Flow vertices
             g2o::VertexSBAFlow* vFlo = new g2o::VertexSBAFlow();
+            // u v d
             Eigen::Matrix<double,3,1> FloD = Converter::toVector3d(pLastFrame->ObtainFlowDepthCamera(TemperalMatch[i],0));
             vFlo->setEstimate(FloD.head(2));
             const int id = i+1;
@@ -2392,12 +2396,13 @@ int Optimizer::PoseOptimizationFlow2Cam(Frame *pCurFrame, Frame *pLastFrame, vec
             optimizer.addVertex(vFlo);
 
             Eigen::Matrix<double,2,1> obs_2d;
+            // 
             const cv::KeyPoint &kpUn = pLastFrame->mvStatKeys[TemperalMatch[i]];
             obs_2d << kpUn.pt.x, kpUn.pt.y;
 
             // Set Binary Edges
             g2o::EdgeSE3ProjectFlow2* e = new g2o::EdgeSE3ProjectFlow2();
-
+            // 这个边里，第一个顶点
             e->setVertex(0, dynamic_cast<g2o::OptimizableGraph::Vertex*>(optimizer.vertex(id)));
             e->setVertex(1, dynamic_cast<g2o::OptimizableGraph::Vertex*>(optimizer.vertex(0)));
             e->setMeasurement(obs_2d);

@@ -690,7 +690,8 @@ void Tracking::Track()
         double cam_pos_time;
         s_1_1 = clock();
         // Get initial estimate using P3P plus RanSac
-        // 优化的迭代初值用P3P + RANSAC 在这个函数里和MotionModel的方法比较了一下inliners的多少
+        // 优化的迭代初值用P3P + RANSAC 在这个函数里和MotionModel的方法比较了一下inliners的多少 用的是静态特征点
+        // 按照程序的流程这里是第一次出现TemperalMatch_subset 经过model的计算，返回的是TemperalMatch 中编好顺序的特征点中的inliners的序号
         cv::Mat iniTcw = GetInitModelCam(TemperalMatch,TemperalMatch_subset);
         e_1_1 = clock();
         s_1_2 = clock();
@@ -1619,7 +1620,7 @@ std::vector<std::vector<int> > Tracking::DynObjTracking()
 
     return ObjIdNew;
 }
-// * @param MatchId是从0-N的整数
+// * @param MatchId是从0-N的整数 相当于给特征点排序
 cv::Mat Tracking::GetInitModelCam(const std::vector<int> &MatchId, std::vector<int> &MatchId_sub)
 {
     cv::Mat Mod = cv::Mat::eye(4,4,CV_32F);
