@@ -2329,7 +2329,7 @@ int Optimizer::PoseOptimizationNew(Frame *pCurFrame, Frame *pLastFrame, vector<i
 
     return nInitialCorrespondences-nBad;
 }
-// * @param TemperalMatch 是通过P3P或者匀速运动模型算出来的光流匹配的点中的inliners
+// * @param TemperalMatch 是通过P3P或者匀速运动模型算出来的光流匹配的点中的inliners 是从上一帧到当前帧光流匹配的点
 int Optimizer::PoseOptimizationFlow2Cam(Frame *pCurFrame, Frame *pLastFrame, vector<int> &TemperalMatch)
 {
     float rp_thres = 0.04; // 0.01
@@ -2387,7 +2387,7 @@ int Optimizer::PoseOptimizationFlow2Cam(Frame *pCurFrame, Frame *pLastFrame, vec
 
             // Set Flow vertices
             g2o::VertexSBAFlow* vFlo = new g2o::VertexSBAFlow();
-            // u v d
+            // u v d 对应的是lastFrame之前一帧的点与lastFrame中的对应点之间的光流 ？
             Eigen::Matrix<double,3,1> FloD = Converter::toVector3d(pLastFrame->ObtainFlowDepthCamera(TemperalMatch[i],0));
             vFlo->setEstimate(FloD.head(2));
             const int id = i+1;
@@ -2402,7 +2402,7 @@ int Optimizer::PoseOptimizationFlow2Cam(Frame *pCurFrame, Frame *pLastFrame, vec
 
             // Set Binary Edges
             g2o::EdgeSE3ProjectFlow2* e = new g2o::EdgeSE3ProjectFlow2();
-            // 这个边里，第一个顶点
+            // 这个边里，第一个顶点是
             e->setVertex(0, dynamic_cast<g2o::OptimizableGraph::Vertex*>(optimizer.vertex(id)));
             e->setVertex(1, dynamic_cast<g2o::OptimizableGraph::Vertex*>(optimizer.vertex(0)));
             e->setMeasurement(obs_2d);

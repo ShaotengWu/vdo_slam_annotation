@@ -690,7 +690,7 @@ void Tracking::Track()
         double cam_pos_time;
         s_1_1 = clock();
         // Get initial estimate using P3P plus RanSac
-        // 优化的迭代初值用P3P + RANSAC 在这个函数里和MotionModel的方法比较了一下inliners的多少 用的是静态特征点
+        // 优化的迭代初值用P3P + RANSAC 在这个函数里和MotionModel的方法比较了一下inliners的多少 用的是从上一帧跟踪过来的静态特征点
         // 按照程序的流程这里是第一次出现TemperalMatch_subset 经过model的计算，返回的是TemperalMatch 中编好顺序的特征点中的inliners的序号
         cv::Mat iniTcw = GetInitModelCam(TemperalMatch,TemperalMatch_subset);
         e_1_1 = clock();
