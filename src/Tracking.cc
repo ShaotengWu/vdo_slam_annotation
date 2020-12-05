@@ -250,6 +250,7 @@ cv::Mat Tracking::GrabImageRGBD(const cv::Mat &imRGB, cv::Mat &imD, const cv::Ma
         /** 
         // // * ? 这里是上一帧能够保留下来的光流追踪点吗
         // // * mvCorres是上一帧与上上一帧之间的匹配还是上一帧与当前帧的匹配
+        tmp是当前帧与下一帧的对应， 没有tmp的是从上一帧的tmp赋值过来的
             mvCorres是当前帧在下一帧的匹配 这里是在上一帧存储的可以被这一帧光流跟踪的静态特征点
         */
         // //这些不是在frame的构造函数赋值过了吗
@@ -690,7 +691,7 @@ void Tracking::Track()
         double cam_pos_time;
         s_1_1 = clock();
         // Get initial estimate using P3P plus RanSac
-        // 优化的迭代初值用P3P + RANSAC 在这个函数里和MotionModel的方法比较了一下inliners的多少 用的是从上一帧跟踪过来的静态特征点
+        // 优化的迭代初值用P3P + RANSAC 在这个函数里和MotionModel的方法比较了一下inliners的多少 N_s 用的是从上一帧跟踪过来的静态特征点
         // 按照程序的流程这里是第一次出现TemperalMatch_subset 经过model的计算，返回的是TemperalMatch 中编好顺序的特征点中的inliners的序号
         cv::Mat iniTcw = GetInitModelCam(TemperalMatch,TemperalMatch_subset);
         e_1_1 = clock();
